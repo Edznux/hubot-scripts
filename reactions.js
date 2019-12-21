@@ -48,8 +48,6 @@ function main(robot){
 module.exports = main;
 
 function updateTriggers(reactionsRows, robot){
-	var web = new WebClient(robot.adapter.options.token);
-
 	for(var i in reactionsRows){
 		row = reactionsRows[i]
 		splitted = row.split(",")
@@ -57,18 +55,26 @@ function updateTriggers(reactionsRows, robot){
 		emoji = splitted[1]
 		console.log("emoji", emoji)
 		console.log("trigger", trigger)
-	
-		triggerRegexp =  new RegExp(trigger, "i");
-		console.log("Regexp: ", triggerRegexp)
-		robot.hear(triggerRegexp, function(msg){
-			robot.logger.info("attempting to react. name:" + emoji + ", channel: "+ msg.message.rawMessage.channel +", timestamp: "+msg.message.rawMessage.ts)
+		addEmoji(robot, emoji, trigger)
+	}
+}
+
+function addEmoji(robot, emoji, trigger){	
+	var web = new WebClient(robot.adapter.options.token);
+	var triggerRegexp =  new RegExp(trigger, "i");
+	console.log("Regexp: ", triggerRegexp)
+	robot.hear(triggerRegexp, function(msg){
+		robot.logger.info("attempting to react. name:" + emoji + ", channel: "+ msg.message.rawMessage.channel +", timestamp: "+msg.message.rawMessage.ts)
+		try {
 			web.reactions.add({
 				name:emoji,
 				channel: msg.message.rawMessage.channel,
 				timestamp: msg.message.rawMessage.ts
 			})
-		})
-	}
+		}catch(e){
+			console.log(e)
+		};
+	})
 }
 
 function getSheet(callback){
